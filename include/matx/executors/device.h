@@ -131,7 +131,7 @@ namespace matx
             } 
           }
 #else
-          #error "Cannot execute device function from host compiler"
+          static_assert(Op::Rank()<0, "Cannot execute device function from host compiler");
 #endif    
         }
 

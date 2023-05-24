@@ -145,6 +145,25 @@ public:
   }
 
   /**
+   * Divert copy executor runs; otherwise fall through to BaseOp
+   */
+  __MATX_INLINE__ void run (MemcpyExecutor&& ex) {
+    MATX_NVTX_START(static_cast<T *>(this)->str(), matx::MATX_NVTX_LOG_API)
+    if constexpr (is_tensor_view_v<decltype(out_)> && is_tensor_view_v<decltype(op_)>)
+    {
+      ex.Exec(out_, op_);
+    }
+    else {
+      BaseOp<set<T, Op>>::run(std::forward<MemcpyExecutor>(ex));
+    }
+  }
+
+  template <typename... Args>
+  __MATX_INLINE__ void run (Args&&... args) {
+    BaseOp<set<T, Op>>::run(std::forward<Args>(args)...);
+  }
+
+  /**
    * Get the rank of the operator
    *
    * @return

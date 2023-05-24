@@ -35,6 +35,7 @@
 #include "matx/core/defines.h"
 #include "matx/executors/host.h"
 #include "matx/executors/kernel.h"
+#include "matx/executors/copy.h"
 
 namespace matx
 {

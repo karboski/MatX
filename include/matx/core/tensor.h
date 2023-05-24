@@ -1148,6 +1148,12 @@ public:
         }
         d++;
       }
+      else if (size == 1)
+      {
+        // Preserve contiguous-ness if possible
+        n[i] = 1;
+        s[i] = (d < RANK) ? this->desc_.Size(d)*this->desc_.Stride(d) : 1;
+      }
       else {
         n[i] = size;
         s[i] = 0;

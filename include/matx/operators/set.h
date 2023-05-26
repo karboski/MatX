@@ -145,17 +145,14 @@ public:
   }
 
   /**
-   * Divert copy executor runs; otherwise fall through to BaseOp
+   * Intercept valid copy-executor runs; otherwise fall through to BaseOp
    */
-  __MATX_INLINE__ void run (MemcpyExecutor&& ex) {
+  template <typename Ex, typename = std::enable_if_t<
+    (std::is_same_v<Ex, MemcpyExecutor> || std::is_same_v<Ex, MemcpyExecutor&>)
+    && is_tensor_view_v<decltype(out_)> && is_tensor_view_v<decltype(op_)>>>
+  __MATX_INLINE__ void run (Ex&& ex) {
     MATX_NVTX_START(static_cast<T *>(this)->str(), matx::MATX_NVTX_LOG_API)
-    if constexpr (is_tensor_view_v<decltype(out_)> && is_tensor_view_v<decltype(op_)>)
-    {
-      ex.Exec(out_, op_);
-    }
-    else {
-      BaseOp<set<T, Op>>::run(std::forward<MemcpyExecutor>(ex));
-    }
+    std::forward<Ex>(ex).Exec(out_, op_);
   }
 
   template <typename... Args>

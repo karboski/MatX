@@ -2845,13 +2845,16 @@ void __MATX_INLINE__ all(OutType dest, const InType &in, const int (&dims)[D], E
  *   Destination view of reduction
  * @param in
  *   Input data to reduce
+ * @param ddof
+ *   Delta Degrees Of Freedom used in the divisor of the result as N - ddof. Defaults
+ *   to 1 to give an unbiased estimate
  * @param stream
  *   CUDA stream ID
  */
 template <typename OutType, typename InType>
-void __MATX_INLINE__ var(OutType dest, const InType &in, int stream = 0)
+void __MATX_INLINE__ var(OutType dest, const InType &in, int ddof = 1, int stream = 0)
 {
-  var(dest, in, cudaExecutor{stream});
+  var(dest, in, ddof, cudaExecutor{stream});
 }
 
 /**
@@ -2873,9 +2876,12 @@ void __MATX_INLINE__ var(OutType dest, const InType &in, int stream = 0)
  *   Input data to reduce
  * @param exec
  *   Executor type
+ * @param ddof
+ *   Delta Degrees Of Freedom used in the divisor of the result as N - ddof. Defaults
+ *   to 1 to give an unbiased estimate
  */
 template <typename OutType, typename InType, typename Executor, std::enable_if_t<is_executor_t<Executor>(), bool> = true>
-void __MATX_INLINE__ var(OutType dest, const InType &in, Executor &&exec)
+void __MATX_INLINE__ var(OutType dest, const InType &in, Executor &&exec, int ddof = 1)
 {
   MATX_NVTX_START("var(" + get_type_str(in) + ")", matx::MATX_NVTX_LOG_API)
   matxMemorySpace_t space;
@@ -2910,8 +2916,8 @@ void __MATX_INLINE__ var(OutType dest, const InType &in, Executor &&exec)
     N *= in.Size(in.Rank() - i);
   }
 
-  // Sample variance for an unbiased estimate
-  (dest = dest / static_cast<inner_type>(N - 1)).run(exec);
+  // Sample variance for an unbiased estimate uses ddof == 1, whereas 0 gives an ML estimate
+  (dest = dest / static_cast<inner_type>(N - ddof)).run(exec);
 }
 
 /**
@@ -2937,9 +2943,12 @@ void __MATX_INLINE__ var(OutType dest, const InType &in, Executor &&exec)
  *   Array containing dimensions to reduce over
  * @param exec
  *   Executor to use for reduction
+ * @param ddof
+ *   Delta Degrees Of Freedom used in the divisor of the result as N - ddof. Defaults
+ *   to 1 to give an unbiased estimate
  */
 template <typename OutType, typename InType, int D, typename Executor>
-void __MATX_INLINE__ var(OutType dest, const InType &in, const int (&dims)[D], Executor &&exec)
+void __MATX_INLINE__ var(OutType dest, const InType &in, const int (&dims)[D], Executor &&exec, int ddof = 1)
 {
 #ifdef __CUDACC__
   MATX_NVTX_START("var(" + get_type_str(in) + ")", matx::MATX_NVTX_LOG_API)
@@ -2950,7 +2959,7 @@ void __MATX_INLINE__ var(OutType dest, const InType &in, const int (&dims)[D], E
   auto perm = detail::getPermuteDims<InType::Rank()>(dims);
   //typename detail::exec_type_t<Executor> etype{exec};
 
-  var(dest, permute(in, perm), std::forward<Executor>(exec));
+  var(dest, permute(in, perm), std::forward<Executor>(exec), ddof);
 #endif  
 }
 
@@ -2976,7 +2985,7 @@ template <typename OutType, typename InType, typename Executor, std::enable_if_t
 void __MATX_INLINE__ stdd(OutType dest, const InType &in, Executor &&exec)
 {
   MATX_NVTX_START("stdd(" + get_type_str(in) + ")", matx::MATX_NVTX_LOG_API)
-  var(dest, in, exec);
+  var(dest, in, exec, 1);
   (dest = sqrt(dest)).run(exec);
 }
 

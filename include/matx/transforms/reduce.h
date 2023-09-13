@@ -1378,8 +1378,8 @@ void __MATX_INLINE__ reduce(OutType dest, [[maybe_unused]] TensorIndexType idest
     }
   }
   dim3 blocks, threads;
-  std::array<index_t, in.Rank()> sizes;
-  for (int i = 0; i < in.Rank(); i++) {
+  std::array<index_t, InType::Rank()> sizes;
+  for (int i = 0; i < InType::Rank(); i++) {
     sizes[i] = in.Size(i);
   }
 

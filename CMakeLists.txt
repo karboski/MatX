@@ -116,6 +116,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         -Wno-inconsistent-missing-override
         -Wno-c++20-extensions
         -Wno-deprecated-declarations)
+    if (CMAKE_COMPILER_VERSION VERSION_LESS 14)
+        target_compile_options(matx INTERFACE -fPIE)
+    endif()
 else ()
     set(WARN_FLAGS
         -Wall

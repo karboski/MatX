@@ -95,7 +95,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     if (CMAKE_COMPILER_VERSION VERSION_LESS 14)
         target_compile_options(matx INTERFACE -fPIE)
     endif()
-	target_compile_options(matx INTERFACE -std=c++17 $<$<COMPILE_LANGUAGE:CUDA>:-ccbin=${CMAKE_CXX_COMPILER}>)
+    target_compile_options(matx INTERFACE -std=c++17 $<$<COMPILE_LANGUAGE:CUDA>:-ccbin=${CMAKE_CXX_COMPILER}>)
 endif()
 
 # 11.2 and above required for async allocation

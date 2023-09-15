@@ -312,9 +312,7 @@ public:
         and clone(). It appears there's no valid code path that would cause this to be unitialized,
         so we're ignoring the warning in this one spot. */
     #pragma GCC diagnostic push
-    #ifdef __GNUC__
-      #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-    #endif
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     return *(stride_.begin() + dim); 
     #pragma GCC diagnostic pop
   }

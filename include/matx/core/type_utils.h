@@ -44,6 +44,7 @@
 #include "matx/core/half.h"
 #include "matx/core/half_complex.h"
 #include "matx/executors/device.h"
+#include "matx/executors/copy.h"
 
 /**
  * Defines type traits for host and device compilers. This file should be includable by
@@ -257,6 +258,7 @@ namespace detail {
 template <typename T> struct is_executor : std::false_type {};
 template <> struct is_executor<cudaExecutor> : std::true_type {};
 template <> struct is_executor<SingleThreadHostExecutor> : std::true_type {};
+template <> struct is_executor<MemcpyExecutor> : std::true_type {};
 }
 
 /**

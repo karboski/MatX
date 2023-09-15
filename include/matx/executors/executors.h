@@ -34,3 +34,4 @@
 
 #include "matx/executors/device.h"
 #include "matx/executors/host.h"
+#include "matx/executors/copy.h"

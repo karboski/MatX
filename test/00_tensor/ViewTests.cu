@@ -464,6 +464,47 @@ TYPED_TEST(ViewTestsFloatNonComplexNonHalf, Random)
     }
 
     ASSERT_LT(fabs(total / (count * count * count)), .15);
+
+    // repeat with persistent state
+    RandomState_t state({count, count, count}, 0, this->exec);
+
+    (t3f = (TestType)-1000000).run(this->exec);
+    (t3f = random<TestType>({count, count, count}, UNIFORM, state)).run(this->exec);
+    this->exec.sync();
+
+    total = 0;
+
+    for (index_t i = 0; i < count; i++) {
+      for (index_t j = 0; j < count; j++) {
+        for (index_t k = 0; k < count; k++) {
+          TestType val = t3f(i, j, k) - 0.5f; // mean centered at zero
+          ASSERT_NE(val, -1000000);
+          total += val;
+          ASSERT_LE(val, 0.5f);
+          ASSERT_LE(-0.5f, val);
+        }
+      }
+    }
+
+    ASSERT_LT(fabs(total / (count * count * count)), .05);
+
+    (t3f = (TestType)-1000000).run(this->exec);
+    (t3f = random<TestType>({count, count, count}, NORMAL, state)).run(this->exec);
+    this->exec.sync();
+
+    total = 0;
+
+    for (index_t i = 0; i < count; i++) {
+      for (index_t j = 0; j < count; j++) {
+        for (index_t k = 0; k < count; k++) {
+          TestType val = t3f(i, j, k);
+          ASSERT_NE(val, -1000000);
+          total += val;
+        }
+      }
+    }
+
+    ASSERT_LT(fabs(total / (count * count * count)), .15);
   }
   MATX_EXIT_HANDLER();
 }
@@ -501,6 +542,38 @@ TYPED_TEST(ViewTestsIntegral, Randomi)
 
     // test default range to make sure it's still 0-100 for all integral types
     (t3f = randomi<TestType>({count, count, count})).run(this->exec);
+    this->exec.sync();
+
+    for (index_t i = 0; i < count; i++) {
+      for (index_t j = 0; j < count; j++) {
+        for (index_t k = 0; k < count; k++) {
+          TestType val = t3f(i, j, k);
+          ASSERT_LE(val, 100);
+          ASSERT_LE(0, val);
+        }
+      }
+    }
+
+    // repeat with persistent state
+    RandomState_t state({count, count, count}, 0, this->exec);
+
+    (t3f = (TestType)0).run(this->exec);
+    (t3f = randomi<TestType>({count, count, count}, state, minBound, maxBound )).run(this->exec);
+    this->exec.sync();
+
+    for (index_t i = 0; i < count; i++) {
+      for (index_t j = 0; j < count; j++) {
+        for (index_t k = 0; k < count; k++) {
+          TestType val = t3f(i, j, k);
+          ASSERT_LE(val, maxBound);
+          ASSERT_LE(minBound, val);
+        }
+      }
+    }
+
+
+    // test default range to make sure it's still 0-100 for all integral types
+    (t3f = randomi<TestType>({count, count, count}, state)).run(this->exec);
     this->exec.sync();
 
     for (index_t i = 0; i < count; i++) {
